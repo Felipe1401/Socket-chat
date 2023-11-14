@@ -134,4 +134,22 @@ Rollo enano III
  esta bien? [Si/No]:transaction 0:rejectManuel left the chat!NICKBienvenido al chat de granjeros![SERVER] Cuentame, que artefactos tienes?[SERVER] Tus artefactos son: Rollo enano III.
  esta bien? [Si/No]NICKBienvenido al chat de granjeros![SERVER] Cliente Felipe conectado.[SERVER] Cuentame, que artefactos tienes?[SERVER] Tus artefactos son: Rollo enano I.
  esta bien? [Si/No]:transaction 0reject:reject::transaction 1reject:reject::transaction 2reject:reject:NICKBienvenido al chat de granjeros![SERVER] Cliente Juan conectado.[SERVER] Cuentame, que artefactos tienes?[SERVER] Tus artefactos son: Abanico ornamental.
- esta bien? [Si/No]:transaction 3reject:reject::transaction 4
+ esta bien? [Si/No]:transaction 3reject:reject::transaction 4NICKBienvenido al chat de granjeros![SERVER] Cuentame, que artefactos tienes?[SERVER] Tus artefactos son: Rollo enano I, Rollo enano II, Rollo enano III, Rollo enano IV y Ánfora quebrada.
+ esta bien? [Si/No]Tu inventario es:
+Rollo enano I
+Rollo enano II
+Rollo enano III
+Rollo enano IV
+Ánfora quebrada
+NICKBienvenido al chat de granjeros![SERVER] Cuentame, que artefactos tienes?[SERVER] Tus artefactos son: Rollo enano I.
+ esta bien? [Si/No]NICKBienvenido al chat de granjeros![SERVER] Cliente b conectado.[SERVER] Cuentame, que artefactos tienes?[SERVER] Tus artefactos son: Rollo enano II.
+ esta bien? [Si/No]Tu inventario es:
+Rollo enano I
+:transaction 0accept: La transaccion 0 con el usuario a ha sido realizada con éxito!accept: La transaccion 0 con el usuario b ha sido realizada con éxito!Tu inventario es:
+Rollo enano II
+a left the chat!EXITNICKBienvenido al chat de granjeros![SERVER] Cuentame, que artefactos tienes?[SERVER] Tus artefactos son: Rollo enano I.
+ esta bien? [Si/No]NICK[SERVER] Cliente b conectado.Bienvenido al chat de granjeros![SERVER] Cuentame, que artefactos tienes?[SERVER] Tus artefactos son: Rollo enano II.
+ esta bien? [Si/No]b: HolaTu inventario es:
+Rollo enano II
+a left the chat!NICKBienvenido al chat de granjeros![SERVER] Cuentame, que artefactos tienes?[SERVER] Tus artefactos son: Rollo enano I, Rollo enano II y Rollo enano IV.
+ esta bien? [Si/No]

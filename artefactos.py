@@ -1,6 +1,8 @@
 host = "127.0.0.1" 
 port = 8000
 
+import re
+
 artefactos = {
     "1": "Rollo enano I",
     "2": "Rollo enano II",
@@ -82,3 +84,8 @@ def get_inventory(hash:dict, nickname:str):
         message+= f"{artefactos[str(i)]}\n"
     print(message)
     return message
+
+def id_to_list(texto):
+    numeros_encontrados = re.findall(r'\d+', texto)
+    numeros = [int(numero) for numero in numeros_encontrados]
+    return numeros

@@ -1,6 +1,5 @@
 import threading
 import socket as skt
-import re
 from artefactos import *
 
 server = skt.socket(skt.AF_INET, skt.SOCK_STREAM)
@@ -58,7 +57,6 @@ def handle(client):
         try:
             message = client.recv(1024)
             message = message.decode("UTF-8", errors="ignore")
-            print(message)
             if ":q" in message:
                 client.send("EXIT".encode("UTF-8", errors="ignore"))
                 with mutex:
@@ -82,10 +80,8 @@ def handle(client):
                 client.send(message.encode("UTF-8", errors="ignore"))
 
             elif ":artefactos" in message:
-                print("pasamos")
                 nickname = message.split(":")[0]
                 message = get_inventory(hash, nickname)
-                print(message)
                 client.send(message.encode("UTF-8", errors="ignore"))
             elif ":offer" in message:
                 params = message.split(" ")[1:]
@@ -164,10 +160,9 @@ def recive():
             client.send("[SERVER] Cuentame, que artefactos tienes?".encode("UTF-8", errors="ignore"))
             inventory = client.recv(1024).decode("UTF-8", errors="ignore")
             inventory = inventory.replace(nickname+": ", "")
-            numeros = inventory.split(", ")
+            numeros = id_to_list(inventory)
             client.send(f"[SERVER] Tus artefactos son: {id_to_name(numeros)}.\n esta bien? [Si/No]".encode("UTF-8", errors="ignore"))
             confirmacion = client.recv(1024).decode("UTF-8", errors="ignore")
-            print(confirmacion.upper().split(" "))
             confirmacion = confirmacion.upper().split(" ")[1]
             if confirmacion == "SI" or confirmacion == "S": break
             else: continue
@@ -175,7 +170,6 @@ def recive():
 
             hash[nickname]["inventario"] = [int(i) for i in numeros]
             hash[nickname]["pending"] = 0
-        print(get_inventory(hash, nickname))
 
         thread = threading.Thread(target=handle, args=(client,))
         thread.start()

@@ -46,13 +46,10 @@ def receive():
                 break
             elif message.startswith(":transaction"):
                 current_trans=(int(message.split(" ")[1]))
-                print(current_trans)
+
             elif message.startswith("accept:"):
-                print(message.split(":")[1])
                 current_trans = None
             elif message.startswith("reject:"):
-                print(message.split(":")[1])
-                print(f"Seteamos en none el current trans de {nickname}")
                 current_trans = None
             else:
                 print(message)
