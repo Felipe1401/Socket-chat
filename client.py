@@ -3,8 +3,34 @@ import threading
 from artefactos import *
 
 artefactos = []
+current_trans = None
+def initTrans(nickname_from,nickname_to, my_itemid, to_itemid):
+    msg = f":offer {nickname_from} {nickname_to} {my_itemid} {to_itemid}" 
+    if current_trans == None and nickname_to!=nickname:
+        print("Puedes realizar la transaccion")
+        #Llamar al servidor para iniciar la transaccion
+        client.send(msg.encode("UTF-8", errors = "ignore"))
+        #En el server llamar a makeTrans
+    else:
+        print("Revisa si tienes una transaccion pendiete o el id del remitente!")
+def accept():
+    global nickname
+    global current_trans
+    if(current_trans!=None):
+        #aceptamos la ultima transaccion
+        print(f"Aceptando la transacción n: {current_trans}")
+        msg = f":accept {nickname} {current_trans}"
+        client.send(msg.encode("UTF-8", errors="ignore"))
+        
+def reject():
+    global nickname
+    global current_trans
+    msg = f":reject {nickname} {current_trans}"
+    client.send(msg.encode("UTF-8", errors = "ignore"))
+
 def receive():
     global nickname
+    global current_trans
     while True:
         try:
             message = client.recv(1024).decode("UTF-8", errors="ignore")
@@ -18,16 +44,20 @@ def receive():
                 continue
             elif message == "EXIT":
                 break
-            
-            #elif message == "INVENTORY_REQUEST":
-                #print("[SERVER] Cuéntame, ¿qué artefactos tienes?")
-                #inventory = input("id: ")
-                #client.send(inventory.encode("UTF-8", errors="ignore"))
-            
+            elif message.startswith(":transaction"):
+                current_trans=(int(message.split(" ")[1]))
+                print(current_trans)
+            elif message.startswith("accept:"):
+                print(message.split(":")[1])
+                current_trans = None
+            elif message.startswith("reject:"):
+                print(message.split(":")[1])
+                print(f"Seteamos en none el current trans de {nickname}")
+                current_trans = None
             else:
                 print(message)
         except:
-            print("An error occurred!")
+            print("Adios!")
             client.close()
             break
 
@@ -40,7 +70,21 @@ def write():
             client.send(":q".encode("UTF-8", errors="ignore"))
             client.close()
             break
-
+        elif ":offer" in content:
+            if (len(content.split(" ")) == 4):
+                params = content.split(" ")
+                nick_from = nickname
+                nick_to, my_art, to_art = params[1], params[2], params[3]
+                initTrans(nick_from, nick_to, my_art, to_art)
+                
+        elif content == ":accept":
+            accept()
+        elif content == ":reject":
+            if current_trans!=None:
+                reject()
+                print("Has rechazado tu transaccion pendiente!")
+            else:
+                print("No tienes ninguna transaccion pendiente")
         else:
             client.send(message.encode("UTF-8", errors="ignore"))
             print(f"Yo: {replace_kaomojis(content)}")

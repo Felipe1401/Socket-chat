@@ -1,5 +1,5 @@
 host = "127.0.0.1" 
-port = 55_556
+port = 8000
 
 artefactos = {
     "1": "Rollo enano I",
@@ -77,8 +77,8 @@ def id_to_name(items:list):
 def get_inventory(hash:dict, nickname:str):
     message = "Tu inventario es:\n"
     l = hash[nickname]["inventario"]
-    for i in range(len(l)):
-        if l[i]:
-            message+=artefactos[str(i+1)]
-            message+="\n"
+    print(l)
+    for i in l:
+        message+= f"{artefactos[str(i)]}\n"
+    print(message)
     return message

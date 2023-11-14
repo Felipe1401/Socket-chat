@@ -8,12 +8,43 @@ server.bind((host, port))
 server.listen()
 hash = {}
 mutex = threading.Lock()
+current_trans = 0
+transactions = {}
+def accept(from_id, trans_id):
+    loc_trans = None
+    with mutex:
+        loc_trans = transactions[trans_id]
+    if(from_id == loc_trans["emit"]):
+        #Si el que acepta es el que recibio la oferta
+        from_nick, to_nick = loc_trans["nicks"][0], loc_trans["nicks"][1]
+        with mutex:
+            from_inv,to_inv = hash[from_nick]["inventario"], hash[to_nick]["inventario"]
+        from_item, to_item = loc_trans["arts"][0], loc_trans["arts"][1]
+        from_idx = hash[from_nick]["inventario"].index(int(from_item))
+        to_idx = hash[to_nick]["inventario"].index(int(to_item))
+        swap = from_item
 
-def broadcast(message, sender=None):
+        hash[from_nick]["inventario"][from_idx] = int(to_item)
+        hash[to_nick]["inventario"][to_idx] = int(swap)
+        hash[to_nick]["pending"] = 0
+        hash[from_nick]["pending"] = 0
+        hash[from_nick]["client"].send(f"accept: La transaccion {trans_id} con el usuario {to_nick} ha sido realizada con éxito!".encode("UTF-8"))
+        hash[to_nick]["client"].send(f"accept: La transaccion {trans_id} con el usuario {from_nick} ha sido realizada con éxito!".encode("UTF-8"))
+    #Cada vez que alguien acepta, tenemos que verificar si ambos aceptaron.
+def reject(from_nick, trans_id):
+    with mutex:
+        loc_trans = transactions[int(trans_id)]
+    to_nick = loc_trans["nicks"][1]
+    from_nick = loc_trans["nicks"][0]
+    if (to_nick in list(hash.keys())):
+        hash[to_nick]["pending"] = 0
+        hash[to_nick]["client"].send(f"reject:".encode("UTF-8", errors="ignore"))
+    hash[from_nick]["pending"] = 0
+    hash[from_nick]["client"].send(f"reject:".encode("UTF-8", errors="ignore"))
+def broadcast(message, sender=None, ):
     for key,value in hash.items():
         if value["client"] is not sender:
             value["client"].send(message)
-
 def private_message(message, sender:str ,reciever:str=None):
     try:
         message = f"[PRIVADO] {sender}:" + message.replace(reciever, "",1)
@@ -22,6 +53,7 @@ def private_message(message, sender:str ,reciever:str=None):
         hash[sender]["client"].send("ERROR: Usuario no encontrado.".encode("UTF-8", errors="ignore"))
 
 def handle(client):
+    global current_trans
     while 1:
         try:
             message = client.recv(1024)
@@ -50,8 +82,41 @@ def handle(client):
                 client.send(message.encode("UTF-8", errors="ignore"))
 
             elif ":artefactos" in message:
+                print("pasamos")
+                nickname = message.split(":")[0]
                 message = get_inventory(hash, nickname)
+                print(message)
                 client.send(message.encode("UTF-8", errors="ignore"))
+            elif ":offer" in message:
+                params = message.split(" ")[1:]
+                nick_from, nick_to, my_id, to_id = params[0], params[1], params[2], params[3]
+                if (nick_to in list(hash.keys()) and hash[nick_to]["pending"] == 0 and int(to_id) in hash[nick_to]["inventario"] and int(my_id) in hash[nick_from]["inventario"]):
+                    with mutex:
+                        loc_trans = current_trans
+                        current_trans+=1
+                        hash[nick_to]["pending"] = 1
+                        hash[nick_from]["pending"] = 1
+                    transactions[loc_trans] = {"state": 1, "nicks":[nick_from, nick_to], "arts" :[my_id, to_id], "emit": nick_to}
+                    msg = f":transaction {loc_trans}"
+                    hash[nick_from]["client"].send(msg.encode("UTF-8", errors="ignore"))
+                    hash[nick_to]["client"].send(msg.encode("UTF-8", errors="ignore"))
+                else:
+                    if nick_to not in list(hash.keys()):
+                        hash[nick_from]["client"].send("El cliente no existe.".encode("UTF-8", errors="ignore"))
+                    elif hash[nick_from]["pending"]:
+                        hash[nick_from]["client"].send("Termine transacciones pendientes antes de iniciar una nueva".encode("UTF-8", errors="ignore"))
+                    elif int(to_id) not in hash[nick_to]["inventario"]:
+                        hash[nick_from]["client"].send(f"El cliente {nick_to} no tiene el item {id_to_name([to_id])}".encode("UTF-8", errors="ignore"))
+                    elif int(my_id) not in hash[nick_from]["inventario"]:
+                        hash[nick_from]["client"].send(f"No tienes el item {id_to_name([my_id])}".encode("UTF-8", errors="ignore"))
+            elif message.startswith(":accept") and len(message.split(" ")) == 3:
+                message = message.split(" ")
+                who = message[1]
+                trans_id = message[2]
+                accept(who, int(trans_id))
+            elif message.startswith(":reject") and len(message.split(" ")) == 3:
+                message = message.split(" ")
+                reject(message[1], message[2])
             else:
                 message = replace_kaomojis(message)
                 broadcast(message.encode("UTF-8", errors="ignore"), client)
@@ -69,6 +134,7 @@ def remove(client):
 
 def lookup(client):
     nick = ""
+    
     for key, value in hash.items():
         if value["client"] == client:
             nick = key
@@ -90,7 +156,6 @@ def recive():
         with mutex:
             hash[nickname] = {}
             hash[nickname]["client"] = client
-            hash[nickname]["inventario"] = [0]*42
         
         print(f"[SERVER] Cliente {nickname} conectado.")
         broadcast(f"[SERVER] Cliente {nickname} conectado.".encode("UTF-8", errors="ignore"), client)
@@ -107,8 +172,9 @@ def recive():
             if confirmacion == "SI" or confirmacion == "S": break
             else: continue
         with mutex:
-            for i in numeros:
-                hash[nickname]["inventario"][int(i)-1] = 1
+
+            hash[nickname]["inventario"] = [int(i) for i in numeros]
+            hash[nickname]["pending"] = 0
         print(get_inventory(hash, nickname))
 
         thread = threading.Thread(target=handle, args=(client,))
