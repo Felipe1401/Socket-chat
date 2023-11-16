@@ -14,7 +14,6 @@ def accept(from_id, trans_id):
     with mutex:
         loc_trans = transactions[trans_id]
     if(from_id == loc_trans["emit"]):
-        #Si el que acepta es el que recibio la oferta
         from_nick, to_nick = loc_trans["nicks"][0], loc_trans["nicks"][1]
         with mutex:
             from_inv,to_inv = hash[from_nick]["inventario"], hash[to_nick]["inventario"]
@@ -29,7 +28,7 @@ def accept(from_id, trans_id):
         hash[from_nick]["pending"] = 0
         hash[from_nick]["client"].send(f"accept: La transaccion {trans_id} con el usuario {to_nick} ha sido realizada con éxito!".encode("UTF-8"))
         hash[to_nick]["client"].send(f"accept: La transaccion {trans_id} con el usuario {from_nick} ha sido realizada con éxito!".encode("UTF-8"))
-    #Cada vez que alguien acepta, tenemos que verificar si ambos aceptaron.
+
 def reject(from_nick, trans_id):
     with mutex:
         loc_trans = transactions[int(trans_id)]
@@ -83,6 +82,7 @@ def handle(client):
                 nickname = message.split(":")[0]
                 message = get_inventory(hash, nickname)
                 client.send(message.encode("UTF-8", errors="ignore"))
+                
             elif ":offer" in message:
                 params = message.split(" ")[1:]
                 nick_from, nick_to, my_id, to_id = params[0], params[1], params[2], params[3]
@@ -96,6 +96,7 @@ def handle(client):
                     msg = f":transaction {loc_trans}"
                     hash[nick_from]["client"].send(msg.encode("UTF-8", errors="ignore"))
                     hash[nick_to]["client"].send(msg.encode("UTF-8", errors="ignore"))
+                    hash[nick_to]["client"].send(f"{nick_from} propoen un intercambio de tu {id_to_name(to_id)} por su {id_to_name(my_id)}".encode("UTF-8", errors="ignore"))
                 else:
                     if nick_to not in list(hash.keys()):
                         hash[nick_from]["client"].send("El cliente no existe.".encode("UTF-8", errors="ignore"))

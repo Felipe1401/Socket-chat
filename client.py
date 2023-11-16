@@ -8,16 +8,13 @@ def initTrans(nickname_from,nickname_to, my_itemid, to_itemid):
     msg = f":offer {nickname_from} {nickname_to} {my_itemid} {to_itemid}" 
     if current_trans == None and nickname_to!=nickname:
         print("Puedes realizar la transaccion")
-        #Llamar al servidor para iniciar la transaccion
         client.send(msg.encode("UTF-8", errors = "ignore"))
-        #En el server llamar a makeTrans
     else:
         print("Revisa si tienes una transaccion pendiete o el id del remitente!")
 def accept():
     global nickname
     global current_trans
     if(current_trans!=None):
-        #aceptamos la ultima transaccion
         print(f"Aceptando la transacción n: {current_trans}")
         msg = f":accept {nickname} {current_trans}"
         client.send(msg.encode("UTF-8", errors="ignore"))
@@ -34,7 +31,6 @@ def receive():
     while True:
         try:
             message = client.recv(1024).decode("UTF-8", errors="ignore")
-            with open("a.txt", "a") as f: f.write(message)
             if message == "NICK":
                 client.send(nickname.encode("UTF-8", errors="ignore"))
             elif message == "NICK_TAKEN":
