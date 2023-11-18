@@ -26,8 +26,8 @@ def accept(from_id, trans_id):
         hash[to_nick]["inventario"][to_idx] = int(swap)
         hash[to_nick]["pending"] = 0
         hash[from_nick]["pending"] = 0
-        hash[from_nick]["client"].send(f"accept: La transaccion {trans_id} con el usuario {to_nick} ha sido realizada con éxito!".encode("UTF-8"))
-        hash[to_nick]["client"].send(f"accept: La transaccion {trans_id} con el usuario {from_nick} ha sido realizada con éxito!".encode("UTF-8"))
+        return from_nick, to_nick
+    else: None, None
 
 def reject(from_nick, trans_id):
     with mutex:
@@ -110,7 +110,12 @@ def handle(client):
                 message = message.split(" ")
                 who = message[1]
                 trans_id = message[2]
-                accept(who, int(trans_id))
+                from_nick, to_nick = accept(who, int(trans_id))
+                if from_nick != None and to_nick != None:
+                    hash[from_nick]["client"].send(f"accept: La transaccion {trans_id} con el usuario {to_nick} ha sido realizada con éxito!".encode("UTF-8"))
+                    hash[to_nick]["client"].send(f"accept: La transaccion {trans_id} con el usuario {from_nick} ha sido realizada con éxito!".encode("UTF-8"))
+
+
             elif message.startswith(":reject") and len(message.split(" ")) == 3:
                 message = message.split(" ")
                 reject(message[1], message[2])
