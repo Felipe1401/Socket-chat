@@ -22,8 +22,9 @@ def accept():
 def reject():
     global nickname
     global current_trans
-    msg = f":reject {nickname} {current_trans}"
-    client.send(msg.encode("UTF-8", errors = "ignore"))
+    if (current_trans!=None):
+        msg = f":reject {nickname} {current_trans}"
+        client.send(msg.encode("UTF-8", errors = "ignore"))
 
 def receive():
     global nickname

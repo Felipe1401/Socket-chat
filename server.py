@@ -15,17 +15,15 @@ def accept(from_id, trans_id):
         loc_trans = transactions[trans_id]
     if(from_id == loc_trans["emit"]):
         from_nick, to_nick = loc_trans["nicks"][0], loc_trans["nicks"][1]
-        with mutex:
-            from_inv,to_inv = hash[from_nick]["inventario"], hash[to_nick]["inventario"]
         from_item, to_item = loc_trans["arts"][0], loc_trans["arts"][1]
-        from_idx = hash[from_nick]["inventario"].index(int(from_item))
-        to_idx = hash[to_nick]["inventario"].index(int(to_item))
-        swap = from_item
-
-        hash[from_nick]["inventario"][from_idx] = int(to_item)
-        hash[to_nick]["inventario"][to_idx] = int(swap)
-        hash[to_nick]["pending"] = 0
-        hash[from_nick]["pending"] = 0
+        with mutex:
+            from_idx = hash[from_nick]["inventario"].index(int(from_item))
+            to_idx = hash[to_nick]["inventario"].index(int(to_item))
+            swap = from_item
+            hash[from_nick]["inventario"][from_idx] = int(to_item)
+            hash[to_nick]["inventario"][to_idx] = int(swap)
+            hash[to_nick]["pending"] = 0
+            hash[from_nick]["pending"] = 0
         return from_nick, to_nick
     else: None, None
 
@@ -34,11 +32,12 @@ def reject(from_nick, trans_id):
         loc_trans = transactions[int(trans_id)]
     to_nick = loc_trans["nicks"][1]
     from_nick = loc_trans["nicks"][0]
-    if (to_nick in list(hash.keys())):
-        hash[to_nick]["pending"] = 0
-        hash[to_nick]["client"].send(f"reject:".encode("UTF-8", errors="ignore"))
-    hash[from_nick]["pending"] = 0
-    hash[from_nick]["client"].send(f"reject:".encode("UTF-8", errors="ignore"))
+    with mutex:
+        if (to_nick in list(hash.keys())):
+            hash[to_nick]["pending"] = 0
+            hash[to_nick]["client"].send(f"reject:".encode("UTF-8", errors="ignore"))
+        hash[from_nick]["pending"] = 0
+        hash[from_nick]["client"].send(f"reject:".encode("UTF-8", errors="ignore"))
 def broadcast(message, sender=None, ):
     for key,value in hash.items():
         if value["client"] is not sender:
