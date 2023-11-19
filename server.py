@@ -25,8 +25,10 @@ def accept(from_id, trans_id):
             hash[to_nick]["inventario"][to_idx] = int(swap)
             hash[to_nick]["pending"] = 0
             hash[from_nick]["pending"] = 0
+            hash[from_nick]["client"].send("Transacción realizada".encode("UTF-8", errors="ignore"))
+            hash[to_nick]["client"].send("Transacción realizada".encode("UTF-8", errors="ignore"))
         return from_nick, to_nick
-    else: None, None
+    else: return None, None
 
 def reject(from_nick, trans_id):
     with mutex:
@@ -39,6 +41,8 @@ def reject(from_nick, trans_id):
             hash[to_nick]["client"].send(f"reject:".encode("UTF-8", errors="ignore"))
         hash[from_nick]["pending"] = 0
         hash[from_nick]["client"].send(f"reject:".encode("UTF-8", errors="ignore"))
+        hash[from_nick]["client"].send("Transacción rechazada".encode("UTF-8", errors="ignore"))
+        hash[to_nick]["client"].send("Transacción rechazada".encode("UTF-8", errors="ignore"))
 
 def broadcast(message, sender=None, ):
     for key,value in hash.items():
