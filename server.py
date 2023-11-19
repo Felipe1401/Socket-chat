@@ -9,6 +9,7 @@ hash = {}
 mutex = threading.Lock()
 current_trans = 0
 transactions = {}
+
 def accept(from_id, trans_id):
     loc_trans = None
     with mutex:
@@ -38,10 +39,12 @@ def reject(from_nick, trans_id):
             hash[to_nick]["client"].send(f"reject:".encode("UTF-8", errors="ignore"))
         hash[from_nick]["pending"] = 0
         hash[from_nick]["client"].send(f"reject:".encode("UTF-8", errors="ignore"))
+
 def broadcast(message, sender=None, ):
     for key,value in hash.items():
         if value["client"] is not sender:
             value["client"].send(message)
+
 def private_message(message, sender:str ,reciever:str=None):
     try:
         message = f"[PRIVADO] {sender}:" + message.replace(reciever, "",1)

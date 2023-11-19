@@ -4,6 +4,7 @@ from artefactos import *
 
 artefactos = []
 current_trans = None
+
 def initTrans(nickname_from,nickname_to, my_itemid, to_itemid):
     msg = f":offer {nickname_from} {nickname_to} {my_itemid} {to_itemid}" 
     if current_trans == None and nickname_to!=nickname:
@@ -11,6 +12,7 @@ def initTrans(nickname_from,nickname_to, my_itemid, to_itemid):
         client.send(msg.encode("UTF-8", errors = "ignore"))
     else:
         print("Revisa si tienes una transaccion pendiete o el id del remitente!")
+
 def accept():
     global nickname
     global current_trans
@@ -18,7 +20,7 @@ def accept():
         print(f"Aceptando la transacción n: {current_trans}")
         msg = f":accept {nickname} {current_trans}"
         client.send(msg.encode("UTF-8", errors="ignore"))
-        
+
 def reject():
     global nickname
     global current_trans
@@ -54,7 +56,6 @@ def receive():
             print("Adios!")
             client.close()
             break
-
 
 def write():
     while 1:
